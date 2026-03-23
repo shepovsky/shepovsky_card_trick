@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
+    <content url="file://$MODULE_DIR$/../shepovsky_shared_libs/shepovsky_playing_cards_lib/src" />
     <orderEntry type="jdk" jdkName="Python 3.13 (shepovsky_card_trick)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
