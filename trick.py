@@ -3,7 +3,6 @@ import random
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
 from shepovsky_playing_cards import Deck
-from shepovsky_playing_cards import Card
 
 def split_cards_into_stacks(card_qty, stack_qty):
     base = card_qty // stack_qty          # floor
@@ -14,11 +13,17 @@ def get_inserts(qty):
     stacks = list(range(GROUP_QTY))
     random.shuffle(stacks)
     inserts_qty = split_cards_into_stacks(qty, GROUP_QTY)
-    numbers = []
+    insert_positions = []
     for stack, insert_qty in zip(stacks, inserts_qty):
-        numbers = numbers + list(random.sample(range(1 + GROUP_SIZE * stack, 1 + GROUP_SIZE * (stack + 1)), insert_qty))
-    numbers.sort()
-    return numbers
+        insert_positions = insert_positions + list(random.sample(range(1 + GROUP_SIZE * stack, 1 + GROUP_SIZE * (stack + 1)), insert_qty))
+    insert_positions.sort()
+    return insert_positions
+
+def clever_shuffle(list_of_cards):
+    random.shuffle(list_of_cards)
+    insert_positions = get_inserts(len(list_of_cards))
+    for position, card in sorted(zip(insert_positions, list_of_cards)): # sorts by insert_positions
+        deck.insert_card(card, position)
 
 os.system('cls')
 input("Think of a card. Remember it and press Enter.")
@@ -38,10 +43,7 @@ while not r in [1,2,3,4]:
     r = int(r)
 
 cards_picked_once = deck[GROUP_SIZE * (r - 1):GROUP_SIZE * r]
-random.shuffle(cards_picked_once)
-insert_positions = get_inserts(len(cards_picked_once))
-for card, position in zip(cards_picked_once, insert_positions):
-    deck.insert_card(card, position)
+clever_shuffle(cards_picked_once)
 
 os.system('cls')
 print("Good. Thank you")
@@ -59,11 +61,7 @@ while not r in [1,2,3,4]:
     r = int(r)
 
 cards_picked_twice = list(set(cards_picked_once) & set(deck[GROUP_SIZE * (r - 1):GROUP_SIZE * r]))
-random.shuffle(cards_picked_twice)
-
-insert_positions = get_inserts(len(cards_picked_twice))
-for card, position in zip(cards_picked_twice, insert_positions):
-    deck.insert_card(card, position)
+clever_shuffle(cards_picked_twice)
 
 os.system('cls')
 print("Thank you")
@@ -84,7 +82,6 @@ the_card = list(set(cards_picked_twice) & set(deck[GROUP_SIZE * (r - 1):GROUP_SI
 if len(the_card) == 1:
     input("I think I know your card. Press Enter")
     print("Your card is:")
-    for card in the_card:
-        print(card)
+    print(the_card[0])
 else:
     print("Stop trying to be cheeky.")
