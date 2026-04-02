@@ -3,11 +3,7 @@ import random
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
 from shepovsky_playing_cards import Deck
-
-def split_cards_into_stacks(card_qty, stack_qty):
-    base = card_qty // stack_qty          # floor
-    remainder = card_qty % stack_qty      # how many need +1
-    return [base + 1] * remainder + [base] * (stack_qty - remainder)
+from shepovsky_playing_cards import split_cards_into_stacks
 
 def get_inserts(qty):
     stacks = list(range(GROUP_QTY))
