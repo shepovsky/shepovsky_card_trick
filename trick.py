@@ -3,12 +3,12 @@ import random
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
 from shepovsky_playing_cards import Deck
-from shepovsky_playing_cards import split_cards_into_stacks
+from shepovsky_playing_cards import get_split_deck_into_stack_sizes
 
 def get_inserts(qty):
     stacks = list(range(GROUP_QTY))
     random.shuffle(stacks)
-    inserts_qty = split_cards_into_stacks(qty, GROUP_QTY)
+    inserts_qty = get_split_deck_into_stack_sizes(qty, GROUP_QTY)
     insert_positions = []
     for stack, insert_qty in zip(stacks, inserts_qty):
         insert_positions = insert_positions + list(random.sample(range(1 + GROUP_SIZE * stack, 1 + GROUP_SIZE * (stack + 1)), insert_qty))
