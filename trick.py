@@ -3,8 +3,9 @@ import random
 import sys
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
+from shepovsky_playing_cards import Player
 from shepovsky_playing_cards import Deck
-from shepovsky_playing_cards import get_split_deck_into_stack_sizes
+from shepovsky_playing_cards import get_split_deck_into_stack_random_sizes
 
 def shuffle_at_step_1():
     deck_original.shuffle()
@@ -37,9 +38,6 @@ def shuffle_at_step_3():
 def create_magic_deck():
     result = []
 
-    # in case the stacks are not equal (as in case with 13 cards being split into 4 groups as [4, 3, 3, 3], shuffle them randomly
-    random.shuffle(stacks)
-
     # split the cards fron Deck Original into rows and columns using Magic Deck instance:
     for r in range(GROUP_QTY):
 
@@ -50,7 +48,11 @@ def create_magic_deck():
         # when stacks have unequal sizes, make them equal by adding None values in specific places
         for index, col in enumerate(row_of_cards):
             if len(col) < GROUP_QTY:
-                col.insert(index, None)
+                for i in range(GROUP_QTY - len(col)):
+                    if len(col) < index:
+                        col.insert(0, None)
+                    else:
+                        col.insert(index, None)
         # switch stack sizes for the next row in case the stack sizes are not equal
         stacks.append(stacks.pop(0))
         # append new Magic row of cards to the Magic Deck
@@ -124,7 +126,7 @@ os.system('cls')
 print("\nStep 2 of 3:")
 input("Thank you! Press Enter to shuffle the deck\n")
 # determine how to split cards in each row into stacks equally. determine the stack sizes
-stacks = get_split_deck_into_stack_sizes(GROUP_SIZE, GROUP_QTY)
+stacks = get_split_deck_into_stack_random_sizes(GROUP_SIZE, GROUP_QTY, GROUP_QTY)
 # create the Magic Deck list which becomes the master list for guessing the cards
 magic_deck = create_magic_deck()
 
@@ -132,26 +134,33 @@ while r2 == 'r':
     os.system('cls')
     print("\nStep 2 of 3:")
     print("Once again, please, find your card below:\n")
+    print(stacks)
+    print(magic_deck)
 
     # populate the Magic Deck with cards from the Original Deck and shuffle them cleverly
     shuffle_at_step_2()
     deck_original.deal_into_cols(GROUP_SIZE)
     r2 = request_which_row()
 
-os.system('cls')
-print("\nStep 3 of 3:")
-input("Great! Thank you. Press Enter to shuffle the deck for the final time\n")
+if len([card for card in magic_deck[r1 - 1][r2 - 1] if card is not None]) > 1:
 
-while r3 == 'r':
     os.system('cls')
     print("\nStep 3 of 3:")
-    print("For the last time find your card below:\n")
-    shuffle_at_step_3()
-    deck_original.deal_into_cols(GROUP_SIZE)
+    input("Great! Thank you. Press Enter to shuffle the deck for the final time\n")
 
-    r3 = request_which_row()
+    while r3 == 'r':
+        os.system('cls')
+        print("\nStep 3 of 3:")
+        print("For the last time find your card below:\n")
+        shuffle_at_step_3()
+        deck_original.deal_into_cols(GROUP_SIZE)
 
-the_card = magic_deck[r1 - 1][r2 - 1][r3 - 1]
+        r3 = request_which_row()
+
+    the_card = magic_deck[r1 - 1][r2 - 1][r3 - 1]
+
+else:
+    the_card = magic_deck[r1 - 1][r2 - 1]
 
 if the_card:
     os.system('cls')
