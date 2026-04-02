@@ -75,8 +75,7 @@ def split_cards_into_stacks(cards, stack_sizes):
 #         deck.insert_card(card, position)
 
 def bye():
-    os.system('cls')
-    print('Bye!')
+    print('\nBye!')
     sys.exit()
 
 def request_which_row():
@@ -87,10 +86,13 @@ def request_which_col():
 
 def request_which(part: str, qty = GROUP_QTY):
     while True:
-        part_number = input(f"\nWhat {part} is it in? (1-{qty} or 'q' to quit): ")
+        part_number = input(f"\nWhat {part} is it in? (1–{qty}, 'r' to reshuffle, 'q' to quit): ")
 
         if part_number.lower().strip() == 'q':
             bye()
+
+        if part_number.lower().strip() == 'r':
+            return 'r'
 
         try:
             part_number = int(part_number)
@@ -99,49 +101,56 @@ def request_which(part: str, qty = GROUP_QTY):
             else:
                 raise ValueError
         except ValueError:
-            print(f"Invalid input! Please enter a number between 1 and {qty}, or 'q' to quit.")
+            print(f"Unexpected input! Please check and try again")
 
+r1 = r2 = r3 = 'r'
+
+# Step 1:
 os.system('cls')
 print("\nStep 1 of 3:")
 input("Think of a card and press Enter")
-
-os.system('cls')
-print("\nStep 1 of 3:")
-print("Find your card below:\n")
-
 deck_original = Deck(DECK_SIZE)
-shuffle_at_step_1()
-deck_original.deal_into_cols(GROUP_SIZE)
-r1 = request_which_row()
+
+while r1 == 'r':
+    os.system('cls')
+    print("\nStep 1 of 3:")
+    print("Find your card below:\n")
+
+    shuffle_at_step_1()
+    deck_original.deal_into_cols(GROUP_SIZE)
+    r1 = request_which_row()
 
 os.system('cls')
 print("\nStep 2 of 3:")
 input("Thank you! Press Enter to shuffle the deck\n")
-
-os.system('cls')
-print("\nStep 2 of 3:")
-print("Once again, please, find your card below:\n")
-
 # determine how to split cards in each row into stacks equally. determine the stack sizes
 stacks = get_split_deck_into_stack_sizes(GROUP_SIZE, GROUP_QTY)
 # create the Magic Deck list which becomes the master list for guessing the cards
 magic_deck = create_magic_deck()
-# populate the Magic Deck with cards from the Original Deck and shuffle them cleverly
-shuffle_at_step_2()
-deck_original.deal_into_cols(GROUP_SIZE)
-r2 = request_which_row()
+
+while r2 == 'r':
+    os.system('cls')
+    print("\nStep 2 of 3:")
+    print("Once again, please, find your card below:\n")
+
+    # populate the Magic Deck with cards from the Original Deck and shuffle them cleverly
+    shuffle_at_step_2()
+    deck_original.deal_into_cols(GROUP_SIZE)
+    r2 = request_which_row()
 
 os.system('cls')
 print("\nStep 3 of 3:")
 input("Great! Thank you. Press Enter to shuffle the deck for the final time\n")
 
-os.system('cls')
-print("\nStep 3 of 3:")
-print("For the last time find your card below:\n")
-shuffle_at_step_3()
-deck_original.deal_into_cols(GROUP_SIZE)
+while r3 == 'r':
+    os.system('cls')
+    print("\nStep 3 of 3:")
+    print("For the last time find your card below:\n")
+    shuffle_at_step_3()
+    deck_original.deal_into_cols(GROUP_SIZE)
 
-r3 = request_which_row()
+    r3 = request_which_row()
+
 the_card = magic_deck[r1 - 1][r2 - 1][r3 - 1]
 
 if the_card:
@@ -150,12 +159,12 @@ if the_card:
     input("I know your card! Press Enter to reveal")
     os.system('cls')
     print("\nThe Grand Reveal:")
-    print(f"You card is: {the_card}")
+    print(f"You card is:")
+    the_card.print_pretty()
 else:
     os.system('cls')
     print("\nYou either trying to be cheeky or you may not have been concentrating on your card well enough. :(")
     print("In any case, something has gone wrong, I am afraid. Try again.")
 
-input()
 bye()
 
