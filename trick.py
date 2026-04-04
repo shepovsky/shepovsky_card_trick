@@ -3,8 +3,7 @@ import random
 import sys
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
-from shepovsky_playing_cards import Player
-from shepovsky_playing_cards import Deck
+from shepovsky_playing_cards import Table
 from shepovsky_playing_cards import get_split_deck_into_stack_random_sizes
 
 def shuffle_at_step_1():
@@ -118,7 +117,8 @@ os.system('cls')
 print("\nStep 1 of 3:")
 input("Think of a card and press Enter")
 # create a new deck of cards and shuffle it
-deck_original = Deck(DECK_SIZE)
+table = Table(DECK_SIZE)
+deck_original = table.deck
 deck_original.shuffle()
 # determine how to split cards in each row into stacks equally. determine the stack sizes
 stacks = get_split_deck_into_stack_random_sizes(GROUP_SIZE, GROUP_QTY, GROUP_QTY)
