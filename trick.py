@@ -1,10 +1,29 @@
+import hashlib
 import os
 import random
 import sys
 
 from trick_data import DECK_SIZE, GROUP_QTY, GROUP_SIZE
+from shepovsky_playing_cards import Player
 from shepovsky_playing_cards import Table
 from shepovsky_playing_cards import get_split_deck_into_stack_random_sizes
+
+class TrickParticipant(Player):
+
+    def __init__(self, name):
+        email = self._generate_dummy_email(name)
+        super().__init__(email=email, name=name)
+        self._responses = {}
+
+    @staticmethod
+    def _generate_dummy_email(name):
+        """Generates a dummy email by hashing the participant name"""
+        name_cleaned = name.strip().lower()
+        local_part = hashlib.md5(name_cleaned.encode()).hexdigest()
+        return f"{local_part}@trick.local"
+
+    def get_response_to_step_1_question(self):
+        pass
 
 def shuffle_at_step_1():
     deck_magic = []
@@ -111,13 +130,34 @@ def request_which(part: str, qty = GROUP_QTY):
 
 # initiate variables for user responses
 r1 = r2 = r3 = 'r'
+table = Table(DECK_SIZE)
+
+# get participants
+while True:
+    participant_name = input(f'Participant {table.players_qty + 1}, what is your name? (press Enter if no more participants): ')
+    if participant_name:
+        player = TrickParticipant(participant_name)
+        try:
+            table.sign_in_player(player)
+        except ValueError:
+            print(f"There is already a participant with name '{participant_name}'. Could you pick a different name please?")
+    else:
+        break
+
+os.system('cls')
+if table.players_qty == 0:
+    bye()
+elif table.players_qty == 1:
+    print(f'Hello, {table.first_player}')
+    input("Think of a card, do not tell anyone, and press Enter")
+else:
+    print('Hello, players!')
+    input("Each of you, think of a card, do not tell anyone, and press Enter")
 
 # Step 1:
 os.system('cls')
 print("\nStep 1 of 3:")
-input("Think of a card and press Enter")
-# create a new deck of cards and shuffle it
-table = Table(DECK_SIZE)
+# get a deck of cards and shuffle it
 deck_original = table.deck
 deck_original.shuffle()
 # determine how to split cards in each row into stacks equally. determine the stack sizes
