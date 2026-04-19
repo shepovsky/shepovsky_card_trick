@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import random
 import sys
@@ -21,6 +22,10 @@ class TrickParticipant(Player):
     @property
     def the_card(self):
         return self._the_card
+
+    @property
+    def responses(self):
+        return self._responses
 
     def set_response(self, step_no: int, response: int):
         self._responses[f"r{step_no}"] = response
@@ -57,6 +62,7 @@ def create_magic_deck(deck: Deck):
 
     # determine how to split cards in each row into stacks equally. determine the stack sizes
     stacks = get_split_deck_into_stack_random_sizes(GROUP_SIZE, GROUP_QTY, GROUP_QTY)
+    logging.debug(f"stacks: {stacks}")
 
     # split the cards fron Deck Original into rows and columns using Magic Deck instance:
     for r in range(GROUP_QTY):
@@ -79,6 +85,37 @@ def create_magic_deck(deck: Deck):
         result.append(row_of_cards)
 
     return result
+
+
+def get_participants(table: Table):
+    while True:
+        os.system('cls')
+        participant_num = table.players_qty + 1
+        print(f'\nParticipant {participant_num}, what is your name?')
+        print('(Leave blank and press Enter if there are no {}participants)'.format(
+            '' if participant_num == 1 else 'more '
+        ))
+        participant_name = input(': ')
+        if participant_name:
+            player = TrickParticipant(participant_name)
+            try:
+                table.sign_in_player(player)
+            except ValueError:
+                print(f"There is already a participant with name '{participant_name}'. Could you pick a different name please?")
+        else:
+            break
+
+
+def intro(table):
+    os.system('cls')
+    if table.players_qty == 0:
+        bye()
+    elif table.players_qty == 1:
+        print(f'Hello, {table.first_player}')
+        input("Think of a card, do not tell anyone, and press Enter")
+    else:
+        print('Dear participants!')
+        input("Each of you, think of your own card (don’t tell anyone), then press Enter.")
 
 
 def shuffle_at_step_1(deck_original, magic_deck, row_shuffler):
@@ -117,7 +154,6 @@ def shuffle_at_step_3(deck_original, magic_deck, row_shuffler):
                 row_new.append(magic_deck[r][c][n])
         random.shuffle(row_new)
         magic_deck_child += [x for x in row_new if x is not None]
-
     return update_deck_original(deck_original, magic_deck_child, row_shuffler)
 
 
@@ -136,9 +172,13 @@ def split_cards_into_stacks(cards, stack_sizes):
     return result
 
 
-def bye():
-    print('\nBye!')
-    sys.exit()
+def bye(player=None):
+    if player:
+        print(f'\nBye, {player.name}! Hope I guessed your card correctly.')
+        input('Press Enter')
+    else:
+        print('\n- - - - - - -\nThe End')
+        sys.exit()
 
 
 def request_which_row():
@@ -195,48 +235,24 @@ def main():
 
     # get participants to a table
     table = Table(DECK_SIZE)
-    while True:
-        os.system('cls')
-        participant_num = table.players_qty + 1
-        print(f'\nParticipant {participant_num}, what is your name?')
-        print('(Leave blank and press Enter if there are no {}participants)'.format(
-            '' if participant_num == 1 else 'more '
-        ))
-        participant_name = input(': ')
-        if participant_name:
-            player = TrickParticipant(participant_name)
-            try:
-                table.sign_in_player(player)
-            except ValueError:
-                print(f"There is already a participant with name '{participant_name}'. Could you pick a different name please?")
-        else:
-            break
+    get_participants(table)
+    intro(table)
 
-    # intro
-    os.system('cls')
-    if table.players_qty == 0:
-        bye()
-    elif table.players_qty == 1:
-        print(f'Hello, {table.first_player}')
-        input("Think of a card, do not tell anyone, and press Enter")
-    else:
-        print('Dear participants!')
-        input("Each of you, think of your own card (don’t tell anyone), then press Enter.")
-
-    # get a deck of cards and shuffle it
+    # get a deck of cards
     deck_original = table.deck
-    # create a list responsible for random shuffle of rows of cards while keeping the same cards in each row
-    row_shuffler = list(range(GROUP_QTY))
     # create the Magic Deck list which becomes the master list for guessing the cards
     magic_deck = create_magic_deck(deck_original)
-    steps = 3
+    logging.debug(f"magic_deck: {magic_deck}")
+    # create a list responsible for random shuffle of rows of cards while keeping the same cards in each row
+    row_shuffler = list(range(GROUP_QTY))
 
-    # Steps 1-3:
+    # take all participants through the card finding steps
+    steps = 3
     for step in range(steps):
         participant_response = 'r'
         for participant in table.players:
 
-            while True:
+            while not participant.determine_the_card(magic_deck):
                 os.system('cls')
                 print(f"\nStep {step + 1} of {steps}:")
 
@@ -265,11 +281,18 @@ def main():
                 if participant_response != 'r': break
 
             participant.set_response(step + 1, row_shuffler.index(participant_response - 1))
-            if step > 0 and participant.determine_the_card(magic_deck):
+            logging.debug(f"row_shuffler: {row_shuffler}, participant {participant.name}: response={participant_response}, "
+                          f"response_converted={row_shuffler.index(participant_response - 1)}, {participant.responses}")
+            if participant.determine_the_card(magic_deck):
                 finale(participant)
+                bye(participant)
 
     bye()
 
-
+logging.basicConfig(
+    filename="debug.log",
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 if __name__ == '__main__':
     main()
